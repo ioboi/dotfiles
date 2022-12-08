@@ -24,10 +24,21 @@ Plug('ellisonleao/glow.nvim')
 Plug('mfussenegger/nvim-dap')
 Plug('rcarriga/nvim-dap-ui')
 Plug('leoluz/nvim-dap-go')
+-- Other
+Plug('airblade/vim-gitgutter')
 vim.call('plug#end')
 
 -- General configuration
+require("catppuccin").setup({
+	integrations = {
+		gitgutter = true -- enable vim-gitgutter style
+	}
+})
+
 vim.cmd.colorscheme "catppuccin"
+
+-- Configure vim-gutter
+vim.cmd("set updatetime=100")
 
 require('lualine').setup {
 	options = {
