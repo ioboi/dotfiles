@@ -31,7 +31,11 @@ vim.call('plug#end')
 -- General configuration
 require("catppuccin").setup({
 	integrations = {
-		gitgutter = true -- enable vim-gitgutter style
+		gitgutter = true, -- enable vim-gitgutter style
+		dap = {
+			enabled = true,
+			enable_ui = true,
+		}
 	}
 })
 
