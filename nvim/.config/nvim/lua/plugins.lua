@@ -99,12 +99,12 @@ return require('packer').startup(function(use)
 	use({
 		'hrsh7th/nvim-cmp',
 		requires = {
-			{ 'hrsh7th/cmp-nvim-lsp' },
-			{ 'hrsh7th/cmp-buffer' },
-			{ 'hrsh7th/cmp-path' },
-			{ 'hrsh7th/cmp-cmdline' },
-			{ 'neovim/nvim-lspconfig' },
-			{ 'L3MON4D3/LuaSnip' }
+			'hrsh7th/cmp-nvim-lsp',
+			'hrsh7th/cmp-buffer',
+			'hrsh7th/cmp-path',
+			'hrsh7th/cmp-cmdline',
+			'neovim/nvim-lspconfig',
+			'L3MON4D3/LuaSnip'
 		},
 		config = function()
 			-- https://github.com/hrsh7th/nvim-cmp#recommended-configuration
@@ -141,12 +141,12 @@ return require('packer').startup(function(use)
 	use({
 		'neovim/nvim-lspconfig',
 		requires = {
-			{ 'williamboman/mason.nvim' }
+			'williamboman/mason.nvim',
+			'nvim-telescope/telescope.nvim',
 		},
 		config = function()
 			local lspconfig = require("lspconfig")
 			-- https://github.com/neovim/nvim-lspconfig#suggested-configuration
-			-- Mappings.
 			-- See `:help vim.diagnostic.*` for documentation on any of the below functions
 			local opts = { noremap = true, silent = true }
 			vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
@@ -154,32 +154,27 @@ return require('packer').startup(function(use)
 			vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
 			vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 
-			-- Use an on_attach function to only map the following keys
-			-- after the language server attaches to the current buffer
+			-- https://github.com/cloudlena/dotfiles/blob/main/nvim/.config/nvim/lua/plugins.lua
+			local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
 			local on_attach = function(client, bufnr)
-				-- Enable completion triggered by <c-x><c-o>
-				vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+				local telescope_builtin = require("telescope.builtin")
 
 				local formatting_augroup = vim.api.nvim_create_augroup("LspFormatting", {})
 
-				-- Mappings.
-				-- See `:help vim.lsp.*` for documentation on any of the below functions
-				local bufopts = { noremap = true, silent = true, buffer = bufnr }
-				vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-				vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-				vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
-				vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-				vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-				vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-				vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-				vim.keymap.set('n', '<space>wl', function()
-					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-				end, bufopts)
-				vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-				vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
-				vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-				vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-				vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+				local function buf_opts(desc)
+					return { noremap = true, silent = true, buffer = bufnr, desc = desc }
+				end
+
+				vim.keymap.set("n", "K", vim.lsp.buf.hover, buf_opts("Show signature of current symbol"))
+				vim.keymap.set("n", "gd", telescope_builtin.lsp_definitions, buf_opts("Go to definiton"))
+				vim.keymap.set("n", "gi", telescope_builtin.lsp_implementations, buf_opts("Go to implementation"))
+				vim.keymap.set("n", "gr", telescope_builtin.lsp_references, buf_opts("Go to reference"))
+				vim.keymap.set("n", "<Leader>rn", vim.lsp.buf.rename, buf_opts("Rename current symbol"))
+				vim.keymap.set("n", "<Leader>ca", vim.lsp.buf.code_action, buf_opts("Run code action"))
+				vim.keymap.set("n", "<Leader>f", function()
+					vim.lsp.buf.format({ async = true })
+				end, buf_opts("Format current file"))
 
 				-- Format on save
 				if client.supports_method("textDocument/formatting") then
@@ -201,30 +196,20 @@ return require('packer').startup(function(use)
 				on_attach(client, bufnr)
 			end
 
-			local lsp_flags = {
-				debounce_text_changes = 150,
-			}
+			lspconfig.bashls.setup({
+				on_attach = on_attach,
+				capabilities = capabilities,
+			})
 
 			lspconfig.gopls.setup {
-				cmd = { "gopls", "serve" },
 				on_attach = on_attach_without_formatting,
-				settings = {
-					gopls = {
-						gofumpt = true,
-					},
-				},
-				flags = lsp_flags,
+				capabilities = capabilities
 			}
 
-			lspconfig.golangci_lint_ls.setup {
-				on_attach = on_attach_without_formatting,
-				settings = {
-					gopls = {
-						gofumpt = true,
-					},
-				},
-				flags = lsp_flags,
-			}
+			lspconfig.rust_analyzer.setup({
+				on_attach = on_attach,
+				capabilities = capabilities,
+			})
 
 			lspconfig.sumneko_lua.setup {
 				on_attach = on_attach,
@@ -238,32 +223,32 @@ return require('packer').startup(function(use)
 						enabled = false
 					},
 				},
-				flags = lsp_flags
+				capabilities = capabilities
 			}
 
 			lspconfig.tsserver.setup {
 				on_attach = on_attach_without_formatting,
-				flags = lsp_flags
+				capabilities = capabilities
 			}
 
 			lspconfig.tailwindcss.setup {
 				on_attach = on_attach_without_formatting,
-				flags = lsp_flags
+				capabilities = capabilities
 			}
 
 			lspconfig.vuels.setup {
 				on_attach = on_attach_without_formatting,
-				flags = lsp_flags
+				capabilities = capabilities
 			}
 
 			lspconfig.pyright.setup {
 				on_attach = on_attach,
-				flags = lsp_flags
+				capabilities = capabilities
 			}
 
 			lspconfig.texlab.setup {
 				on_attach = on_attach,
-				flags = lsp_flags
+				capabilities = capabilities
 			}
 
 			vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.formatting_sync()]]
