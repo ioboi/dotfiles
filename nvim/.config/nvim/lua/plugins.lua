@@ -267,7 +267,9 @@ return require('packer').startup(function(use)
 				null_ls.builtins.formatting.prettierd,
 				null_ls.builtins.diagnostics.golangci_lint,
 				null_ls.builtins.formatting.goimports,
-				null_ls.builtins.diagnostics.hadolint
+				null_ls.builtins.diagnostics.hadolint,
+				null_ls.builtins.diagnostics.shellcheck,
+				null_ls.builtins.formatting.shfmt
 			}
 
 			-- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Formatting-on-save#code
