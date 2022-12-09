@@ -160,6 +160,8 @@ return require('packer').startup(function(use)
 				-- Enable completion triggered by <c-x><c-o>
 				vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
+				local formatting_augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+
 				-- Mappings.
 				-- See `:help vim.lsp.*` for documentation on any of the below functions
 				local bufopts = { noremap = true, silent = true, buffer = bufnr }
@@ -178,6 +180,25 @@ return require('packer').startup(function(use)
 				vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
 				vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
 				vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+
+				-- Format on save
+				if client.supports_method("textDocument/formatting") then
+					vim.api.nvim_clear_autocmds({ group = formatting_augroup, buffer = bufnr })
+					vim.api.nvim_create_autocmd("BufWritePre", {
+						group = formatting_augroup,
+						buffer = bufnr,
+						callback = function()
+							vim.lsp.buf.format()
+						end,
+					})
+				end
+			end
+
+			local on_attach_without_formatting = function(client, bufnr)
+				client.server_capabilities.documentFormattingProvider = false
+				client.server_capabilities.documentOnTypeFormattingProvider = false
+				client.server_capabilities.documentRangeFormattingProvider = false
+				on_attach(client, bufnr)
 			end
 
 			local lsp_flags = {
@@ -186,7 +207,7 @@ return require('packer').startup(function(use)
 
 			lspconfig.gopls.setup {
 				cmd = { "gopls", "serve" },
-				on_attach = on_attach,
+				on_attach = on_attach_without_formatting,
 				settings = {
 					gopls = {
 						gofumpt = true,
@@ -196,7 +217,7 @@ return require('packer').startup(function(use)
 			}
 
 			lspconfig.golangci_lint_ls.setup {
-				on_attach = on_attach,
+				on_attach = on_attach_without_formatting,
 				settings = {
 					gopls = {
 						gofumpt = true,
@@ -221,17 +242,17 @@ return require('packer').startup(function(use)
 			}
 
 			lspconfig.tsserver.setup {
-				on_attach = on_attach,
+				on_attach = on_attach_without_formatting,
 				flags = lsp_flags
 			}
 
 			lspconfig.tailwindcss.setup {
-				on_attach = on_attach,
+				on_attach = on_attach_without_formatting,
 				flags = lsp_flags
 			}
 
 			lspconfig.vuels.setup {
-				on_attach = on_attach,
+				on_attach = on_attach_without_formatting,
 				flags = lsp_flags
 			}
 
@@ -246,6 +267,42 @@ return require('packer').startup(function(use)
 			}
 
 			vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.formatting_sync()]]
+		end
+	})
+
+	-- Format and Lint
+	use({
+		'jose-elias-alvarez/null-ls.nvim',
+		requires = { "nvim-lua/plenary.nvim" },
+		config = function()
+			local null_ls = require("null-ls")
+
+			local sources = {
+				null_ls.builtins.code_actions.eslint_d,
+				null_ls.builtins.formatting.prettierd,
+				null_ls.builtins.diagnostics.golangci_lint,
+				null_ls.builtins.formatting.goimports,
+				null_ls.builtins.diagnostics.hadolint
+			}
+
+			-- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Formatting-on-save#code
+			local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+
+			null_ls.setup({
+				sources = sources,
+				on_attach = function(client, bufnr)
+					if client.supports_method("textDocument/formatting") then
+						vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
+						vim.api.nvim_create_autocmd("BufWritePre", {
+							group = augroup,
+							buffer = bufnr,
+							callback = function()
+								vim.lsp.buf.format({ bufnr = bufnr })
+							end,
+						})
+					end
+				end
+			})
 		end
 	})
 
