@@ -19,13 +19,13 @@ return require('packer').startup(function(use)
 	use({
 		'catppuccin/nvim',
 		requires = {
-			'airblade/vim-gitgutter'
+			'lewis6991/gitsigns.nvim'
 		},
 		config = function()
 			require("catppuccin").setup({
 				integrations = {
-					gitgutter = true, -- enable vim-gitgutter style
-					dap = {
+					gitsigns = true, -- enable gitsigns style
+					dap      = {
 						enabled = true,
 						enable_ui = true,
 					}
@@ -38,9 +38,12 @@ return require('packer').startup(function(use)
 
 	-- Git
 	use({
-		'airblade/vim-gitgutter',
+		'lewis6991/gitsigns.nvim',
+		tag = 'release',
 		config = function()
-			vim.cmd("set updatetime=100")
+			require('gitsigns').setup({
+				current_line_blame = true
+			})
 		end
 	})
 
