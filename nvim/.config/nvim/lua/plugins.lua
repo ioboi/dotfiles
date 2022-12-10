@@ -62,16 +62,6 @@ return require('packer').startup(function(use)
 		end
 	})
 
-	-- Preview markdown
-	use({
-		'ellisonleao/glow.nvim',
-		config = function()
-			vim.g.glow_use_pager = true
-			vim.g.glow_border = "shadow"
-			vim.keymap.set("n", "<leader>p", "<cmd>Glow<cr>")
-		end
-	})
-
 	-- Mason as a package manager for LSPs etc.
 	use({
 		'williamboman/mason.nvim',
@@ -239,7 +229,7 @@ return require('packer').startup(function(use)
 				capabilities = capabilities
 			}
 
-			lspconfig.vuels.setup {
+			lspconfig.volar.setup {
 				on_attach = on_attach_without_formatting,
 				capabilities = capabilities
 			}
