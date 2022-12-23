@@ -199,6 +199,11 @@ return require('packer').startup(function(use)
 				capabilities = capabilities
 			}
 
+			lspconfig.clangd.setup {
+				on_attach = on_attach,
+				capabilities = capabilities
+			}
+
 			lspconfig.rust_analyzer.setup({
 				on_attach = on_attach,
 				capabilities = capabilities,
