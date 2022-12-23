@@ -240,7 +240,7 @@ return require('packer').startup(function(use)
 			}
 
 			lspconfig.pyright.setup {
-				on_attach = on_attach,
+				on_attach = on_attach_without_formatting,
 				capabilities = capabilities
 			}
 
