@@ -88,6 +88,25 @@ return require('packer').startup(function(use)
 		end
 	})
 
+	use({
+		'WhoIsSethDaniel/mason-tool-installer.nvim',
+		requires = { { 'williamboman/mason.nvim' } },
+		config = function()
+			require('mason-tool-installer').setup({
+				ensure_installed = {
+					'eslint_d',
+					'golangci_lint',
+					'hadolint',
+					'shellcheck',
+					'black',
+					'goimports',
+					'prettierd',
+					'shfmt'
+				}
+			})
+		end
+	})
+
 	-- Completion
 	use({
 		'hrsh7th/nvim-cmp',
