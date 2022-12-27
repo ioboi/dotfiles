@@ -95,7 +95,7 @@ return require('packer').startup(function(use)
 			require('mason-tool-installer').setup({
 				ensure_installed = {
 					'eslint_d',
-					'golangci_lint',
+					'golangci-lint',
 					'hadolint',
 					'shellcheck',
 					'black',
