@@ -101,7 +101,8 @@ return require('packer').startup(function(use)
 					'black',
 					'goimports',
 					'prettierd',
-					'shfmt'
+					'shfmt',
+					'lua-language-server'
 				}
 			})
 		end
@@ -228,7 +229,7 @@ return require('packer').startup(function(use)
 				capabilities = capabilities,
 			})
 
-			lspconfig.sumneko_lua.setup {
+			lspconfig.lua_ls.setup {
 				on_attach = on_attach,
 				settings = {
 					Lua = {
